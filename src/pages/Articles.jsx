@@ -1,8 +1,15 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/style.css";
 import Card from "react-bootstrap/Card";
-import data from "../data.json";
+
+/* For testing data from data.json  
+       import data from "../data.json";
+*/
+
+
 import { Link } from "react-router-dom";
+import { db } from "../firebase";
+import { collection, getDocs } from "firebase/firestore/lite";
 
 /* I demonstrate how you can use 2 types of styles (in the component itself and in pure CSS styles) */
 
@@ -17,15 +24,29 @@ const styles = {
 };
 
 const Articles = () => {
+  const [newsPost, setNewsPost] = useState([]);
+
+    const newsCollectionRef = collection(db, "news");
+    
+    useEffect(() => {
+      const getNews = async () => {
+        const data = await getDocs(newsCollectionRef);
+        setNewsPost(data.docs.map((doc) => ({...doc.data(), id: doc.id})))
+      
+      };
+
+      getNews()
+    }, [newsCollectionRef]);
+
 
   // Create a posts cards
   return (
     <div className="articles" style={styles.articles}>
-      {data ? (
+      {newsPost ? (
         <div className="news">
-          {data.map((news) => (
+          {newsPost.map((news) => (
             <div className="card" key={news.id} style={styles.card}>
-              <Link to={`/news/${news.id}`} style={{textDecoration: 'none'}}>
+              <Link to={`/news/${news.id}`} style={{ textDecoration: "none" }}>
                 <Card.Img
                   className="card-image"
                   variant="top"
